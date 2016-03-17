@@ -1,13 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
 
-
-## Loading and preprocessing the data
-```{r loading_and_preprocessing, echo=TRUE}
 dataUrl <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip'
 zipFile <- 'activity.zip'
 csvFile <- 'activity.csv'
@@ -24,11 +15,6 @@ if (file.exists(csvFile) == FALSE){
 
 # Load data from file
 activityData <- read.csv(csvFile, na.strings = 'NA')
-```
-
-
-## What is mean total number of steps taken per day?
-```{r total_and_mean_total_steps_per_day, echo=TRUE}
 
 # Get the list of all the unique dates the data were collected
 alldays <- unique(activityData$date)
@@ -41,28 +27,19 @@ for (day in alldays) {
   total_steps <- c(total_steps, sum(activityDataPerDay$steps))
 }
 
-# Create an histogram in for the total steps per day
+# Create an histogram in a png file for the total steps per day
+png(filename = 'histogram_total_steps_per_day.png')
 plot(as.Date(alldays), total_steps, type = 'h', xlab='Days', ylab='Total steps',
      main='Total steps per day')
+dev.off()
 
-mean(total_steps, na.rm = TRUE)
-```
-The mean total number of steps per day is: 10766.19
+print('Open average_steps_per_day.png for time series plot of average number of steps taken')
 
-## The 5-minute interval with the maximum number of steps is has 615 steps
-```{r max_steps_per_interval, echo=TRUE}
 index_max_number_of_steps <- which(activityData$steps == max(activityData$steps, na.rm = TRUE))
+print('The 5 min interval with the maximum number of steps is:')
 print(activityData$interval[index_max_number_of_steps])
-```
 
-## Imputing missing values
-```{r remove_missing_values, echo=TRUE}
-# Since missing data are NA, we want to subset all the data where the steps is not NA
-clean_activityData <- subset(activityData, is.na(activityData$steps) == FALSE)
-```
-
-## What is the average daily activity pattern?
-```{r daily_activity_pattern, echo=TRUE}
+# Impute missing data (NA)
 # Since missing data are NA, we want to subset all the data where the steps is not NA
 clean_activityData <- subset(activityData, is.na(activityData$steps) == FALSE)
 
@@ -84,20 +61,21 @@ for (day in alldays) {
 mean_and_mediandf <- data.frame('Mean_Steps'= mean_steps, 'Median_Steps'= median_steps, 'date' = unique(clean_activityData$date))
 mean_and_mediandf$date <- as.Date(mean_and_mediandf$date)
 
-# Plot the average steps per day and the median steps per day
+print('Mean and median steps per day:')
+print(mean_and_mediandf)
 
+# Plot into a png file the average steps per day and the median steps per day
+png(filename = 'average_steps_per_day.png')
 with(mean_and_mediandf, plot(date, Mean_Steps, type = 'l', xlab = 'Days', ylab = 'Steps'))
 points(mean_and_mediandf$Median_Steps, type = 'l', col='red')
+dev.off()
 
-```
+# Create an histogram in a png file for the total steps per day
+png(filename = 'histogram_total_steps_per_day_without_missing_data.png')
+with(mean_and_mediandf, plot(date, total_steps, type = 'h', xlab = 'Days', ylab = 'Total steps',
+                             main = 'Total steps per day (missing values ignored)'))
+dev.off()
 
-From the histogram, we cannot really tell whether or not there is a pattern. It looks like there are
-more steps per day towards the end of the month. We can observe that after with a high number of steps,
-there is a day with lower than average number of steps
-
-
-## Are there differences in activity patterns between weekdays and weekends?
-```{r activity_pattern_weekdays_weekends}
 # Define a function that returns 'weekend' when the date is a weekend (Sunday or Saturday);
 # otherwise 'weekday'
 
@@ -111,7 +89,7 @@ convert_to_weekday_weekend <- function(d){
 
 # Create a vector that says the type of day (weekday or weekend) and add that vector as a column of
 # the data frame
-typeOfDay <- lapply(as.Date(clean_activityData$date), convert_to_weekday_weekend)
+typeOfDay <- lapply(clean_activityData$date, convert_to_weekday_weekend)
 
 library('dplyr')
 clean_activityData <- mutate(clean_activityData, dayType = typeOfDay)
@@ -132,14 +110,10 @@ for (curr_interval in allintervals) {
 }
 
 # Plot the average steps per interval on the weekdays and on the weekends
+png(filename = 'average_steps_per_interval_pertypeofDay.png')
 plot(allintervals, average_steps_weekday, type = 'l', xlab = 'Intervals', ylab = 'Average Steps', col = 'blue',
      main = 'Average steps per intervals')
 points(average_steps_weekend, type = 'l', col='red')
 legend('topright', pch=c('-','-'), lty=c(1,1), col=c('blue', 'red'), 
        legend=c('Weekdays', 'Weekends'))
-```
-
-During the weekends, there are more activities early during the day. They are around the intervals 0 to about 300.
-During the weekends, the average steps is very low until around interval 10 and they reach a peak around interval 800
-
-
+dev.off()

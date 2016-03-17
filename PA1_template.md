@@ -1,13 +1,9 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r loading_and_preprocessing, echo=TRUE}
+
+```r
 dataUrl <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip'
 zipFile <- 'activity.zip'
 csvFile <- 'activity.csv'
@@ -28,8 +24,8 @@ activityData <- read.csv(csvFile, na.strings = 'NA')
 
 
 ## What is mean total number of steps taken per day?
-```{r total_and_mean_total_steps_per_day, echo=TRUE}
 
+```r
 # Get the list of all the unique dates the data were collected
 alldays <- unique(activityData$date)
 
@@ -44,25 +40,40 @@ for (day in alldays) {
 # Create an histogram in for the total steps per day
 plot(as.Date(alldays), total_steps, type = 'h', xlab='Days', ylab='Total steps',
      main='Total steps per day')
+```
 
+![](PA1_template_files/figure-html/total_and_mean_total_steps_per_day-1.png)
+
+```r
 mean(total_steps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 The mean total number of steps per day is: 10766.19
 
 ## The 5-minute interval with the maximum number of steps is has 615 steps
-```{r max_steps_per_interval, echo=TRUE}
+
+```r
 index_max_number_of_steps <- which(activityData$steps == max(activityData$steps, na.rm = TRUE))
 print(activityData$interval[index_max_number_of_steps])
 ```
 
+```
+## [1] 615
+```
+
 ## Imputing missing values
-```{r remove_missing_values, echo=TRUE}
+
+```r
 # Since missing data are NA, we want to subset all the data where the steps is not NA
 clean_activityData <- subset(activityData, is.na(activityData$steps) == FALSE)
 ```
 
 ## What is the average daily activity pattern?
-```{r daily_activity_pattern, echo=TRUE}
+
+```r
 # Since missing data are NA, we want to subset all the data where the steps is not NA
 clean_activityData <- subset(activityData, is.na(activityData$steps) == FALSE)
 
@@ -88,8 +99,9 @@ mean_and_mediandf$date <- as.Date(mean_and_mediandf$date)
 
 with(mean_and_mediandf, plot(date, Mean_Steps, type = 'l', xlab = 'Days', ylab = 'Steps'))
 points(mean_and_mediandf$Median_Steps, type = 'l', col='red')
-
 ```
+
+![](PA1_template_files/figure-html/daily_activity_pattern-1.png)
 
 From the histogram, we cannot really tell whether or not there is a pattern. It looks like there are
 more steps per day towards the end of the month. We can observe that after with a high number of steps,
@@ -97,7 +109,8 @@ there is a day with lower than average number of steps
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r activity_pattern_weekdays_weekends}
+
+```r
 # Define a function that returns 'weekend' when the date is a weekend (Sunday or Saturday);
 # otherwise 'weekday'
 
@@ -117,7 +130,19 @@ library('dplyr')
 clean_activityData <- mutate(clean_activityData, dayType = typeOfDay)
 
 print(head(clean_activityData), 10)
+```
 
+```
+##   steps       date interval dayType
+## 1     0 2012-10-02        0 weekday
+## 2     0 2012-10-02        5 weekday
+## 3     0 2012-10-02       10 weekday
+## 4     0 2012-10-02       15 weekday
+## 5     0 2012-10-02       20 weekday
+## 6     0 2012-10-02       25 weekday
+```
+
+```r
 # Get the list of all unique intervals  
 allintervals <- unique(clean_activityData$interval)
 average_steps_weekday <- c()
@@ -138,6 +163,8 @@ points(average_steps_weekend, type = 'l', col='red')
 legend('topright', pch=c('-','-'), lty=c(1,1), col=c('blue', 'red'), 
        legend=c('Weekdays', 'Weekends'))
 ```
+
+![](PA1_template_files/figure-html/activity_pattern_weekdays_weekends-1.png)
 
 During the weekends, there are more activities early during the day. They are around the intervals 0 to about 300.
 During the weekends, the average steps is very low until around interval 10 and they reach a peak around interval 800
